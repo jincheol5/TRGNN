@@ -58,7 +58,6 @@ def app_data(config: dict):
                     graph_list=graph_list,
                     graph_type=graph_type,
                     num_nodes=config['num_nodes'],
-                    chunk_size=config['chunk_size'],
                     dir_type=config['mode']
                 )
 
