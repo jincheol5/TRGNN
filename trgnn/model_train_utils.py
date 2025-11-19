@@ -9,6 +9,7 @@ class ModelTrainUtils:
         """
         Input:
             dataset:
+                raw: [seq_len,N,1]
                 r: [seq_len,N,1]
                 t: [seq_len,N,1]
                 src: [seq_len,1]
@@ -19,6 +20,7 @@ class ModelTrainUtils:
         Output:
             data_loader: 
                 batch
+                    raw: [B,N,1]
                     r: [B,N,1]
                     t: [B,N,1]
                     src: [B,1]
@@ -31,6 +33,7 @@ class ModelTrainUtils:
         for start in range(0,seq_len,batch_size):
             end=start+batch_size
             batch={
+                "raw":dataset["raw"][start:end], # [B,N,1]
                 "r":dataset["r"][start:end], # [B,N,1]
                 "t":dataset["t"][start:end], # [B,N,1]
                 "src":dataset["src"][start:end], # [B,1]

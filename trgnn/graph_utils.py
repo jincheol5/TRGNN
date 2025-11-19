@@ -214,6 +214,7 @@ class GraphUtils:
         Output:
             dataset: sequence of data
                 data:
+                    raw: [N,1]
                     r: [N,1]
                     t: [N,1]
                     src: src id
@@ -221,6 +222,9 @@ class GraphUtils:
                     label: tar label, 1.0 or 0.0
                     n_mask: [N,]
         """
+        raw=torch.zeros(num_nodes,1,dtype=torch.float32) # [N,1]
+        raw[source_id]=1.0
+
         r_list=[]
         t_list=[]
         src_list=[]
@@ -250,6 +254,7 @@ class GraphUtils:
         
         # convert to dataset, E = number of edge_events = seq_len
         dataset={}
+        dataset['raw']=raw.unsqueeze(0).expand(num_edge_events,num_nodes,1) # [E,N,1]
         dataset['r']=torch.stack(r_list,dim=0) # [E,N,1]
         dataset['t']=torch.stack(t_list,dim=0) # [E,N,1]
         dataset['src']=torch.tensor(src_list,dtype=torch.int64).unsqueeze(-1) # [E,1]
