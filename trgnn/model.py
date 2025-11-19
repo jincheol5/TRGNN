@@ -217,6 +217,9 @@ class TRGNN(nn.Module):
 
             # compute logit and set next r
             logit=self.linear(z) # [B,1]
+            logit_list.append(logit)
+            memory=updated_memory # set next memory
+
             r_pred=r[-1] # [N,1]
             for tar_id,pred_logit in zip(tar,logit.squeeze(1)):
                 r_pred[tar_id]=pred_logit
