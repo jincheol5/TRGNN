@@ -221,7 +221,8 @@ class TRGNN(nn.Module):
             memory=updated_memory # set next memory
 
             r_pred=r[-1] # [N,1]
-            for tar_id,pred_logit in zip(tar,logit.squeeze(1)):
+            pred_logits=torch.sigmoid(logit)
+            for tar_id,pred_logit in zip(tar,pred_logits.squeeze(1)):
                 r_pred[tar_id]=pred_logit
             r_label=batch['r'][-1] # [N,1]
             r=ModelTrainUtils.teacher_forcing(r_pred=r_pred,r_label=r_label,tar=tar) # [N,1]
