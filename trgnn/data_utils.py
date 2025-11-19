@@ -10,7 +10,7 @@ class DataUtils:
     dataset_path=os.path.join('..','data','trgnn')
     
     @staticmethod
-    def save_to_pickle(data,file_name:str,dir_type:Literal['graph','train','val','test'],num_nodes:Literal[20,50,100,500,1000]):
+    def save_to_pickle(data,file_name:str,dir_type:Literal['graph','train','val','test'],num_nodes:Literal[20,50,100,500,1000]=20):
         file_name=file_name+".pkl"
         file_path=os.path.join(DataUtils.dataset_path,dir_type,file_name)
         if dir_type=='test':
@@ -20,7 +20,7 @@ class DataUtils:
         print(f"Save {file_name}")
     
     @staticmethod
-    def load_from_pickle(file_name:str,dir_type:Literal['graph','train','val','test'],num_nodes:Literal[20,50,100,500,1000]):
+    def load_from_pickle(file_name:str,dir_type:Literal['graph','train','val','test'],num_nodes:Literal[20,50,100,500,1000]=20):
         file_name=file_name+".pkl"
         file_path=os.path.join(DataUtils.dataset_path,dir_type,file_name)
         if dir_type=='test':
