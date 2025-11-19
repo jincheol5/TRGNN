@@ -50,7 +50,7 @@ class TGAT(nn.Module):
             tar_h=torch.cat([tar_vec,encoded_tar_t],dim=-1) # [B,node_dim+latent_dim+latent_dim]
 
             # neighbor
-            hidden_ft=torch.zeros((batch_size,num_nodes,self.latent_dim),dtype=torch.float,device=x.device) # [B,N,latent_dim]
+            hidden_ft=torch.zeros((batch_size,num_nodes,self.latent_dim),dtype=torch.float,device=device) # [B,N,latent_dim]
             x=torch.cat([x,hidden_ft],dim=-1) # [B,N,node_dim+latent_dim]
             encoded_t=self.time_encoder(t) # [B,N,latent_dim]
             h=torch.cat([x,encoded_t],dim=-1) # [B,N,node_dim+latent_dim+latent_dim]
