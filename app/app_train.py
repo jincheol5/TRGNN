@@ -40,8 +40,14 @@ def app_train(config: dict):
             data loading
             """
             dataset_list=DataUtils.load_from_pickle(file_name=f"train_20",dir_type="train")
+            selected_dataset_list=[]
+            for i in range(0,len(dataset_list),20):
+                sub_dataset_list=dataset_list[i:i+20] 
+                if len(sub_dataset_list):
+                    selected_dataset_list.append(random.choice(sub_dataset_list))
+
             train_data_loader_list=[]
-            for dataset in dataset_list:
+            for dataset in selected_dataset_list:
                 data_loader=ModelTrainUtils.get_data_loader(dataset=dataset,batch_size=config['batch_size'])
                 train_data_loader_list.append(data_loader)
             
