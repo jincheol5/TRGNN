@@ -68,7 +68,7 @@ def app_data(config: dict):
             """
             graph_list_dict=DataUtils.load_from_pickle(file_name=f"{config['mode']}_{config['num_nodes']}",dir_type="graph")
             graph_list=graph_list_dict[config['graph_type']]
-            DataUtils.save_graph_list_to_dataset_list(
+            DataUtils.save_graph_list_to_dataset_list_chunk(
                 graph_list=graph_list,
                 graph_type=config['graph_type'],
                 num_nodes=config['num_nodes'],
