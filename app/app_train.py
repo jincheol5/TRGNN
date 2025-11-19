@@ -86,7 +86,7 @@ def app_train(config: dict):
             """
             data loading
             """
-            dataset_list=DataUtils.load_from_pickle(file_name=f"test_{config['num_nodes']}",dir_type="test")
+            dataset_list=DataUtils.load_from_pickle(file_name=f"test_{config['num_nodes']}",dir_type="test",num_nodes=config['num_nodes'])
             test_data_loader_list=[]
             for dataset in dataset_list:
                 data_loader=ModelTrainUtils.get_data_loader(dataset=dataset,batch_size=config['batch_size'])
