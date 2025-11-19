@@ -185,7 +185,7 @@ class GraphUtils:
         return event_stream
 
     @staticmethod
-    def compute_tR_step(num_nodes:int,source_id:int,edge_event:tuple,init:bool=False,gamma:torch.Tensor=None):
+    def compute_tR_step(num_nodes:int,source_id:int,edge_event:tuple=None,init:bool=False,gamma:torch.Tensor=None):
         """
         edge_event: tuple, (src,tar,ts)
         gamma: [N,2] tensor, (tR,visited time)
