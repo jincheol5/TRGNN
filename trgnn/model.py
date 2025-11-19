@@ -173,7 +173,7 @@ class TRGNN(nn.Module):
         logit_list=[]
         num_nodes=data_loader[0]['raw'].size(1)
         memory=torch.zeros(num_nodes,self.latent_dim,dtype=torch.float32,device=device) # [N,latent_dim]
-        r=data_loader[0]['raw'] # [B,N,1]
+        r=data_loader[0]['raw'][0] # [N,1]
         r=r.to(device)
         for batch in data_loader:
             batch={k:v.to(device) for k,v in batch.items()}
@@ -181,6 +181,9 @@ class TRGNN(nn.Module):
             src=batch['src'] # [B,1], long
             tar=batch['tar'] # [B,1], long
             n_mask=batch['n_mask'] # [B,N,], neighbor node mask
+
+            batch_size=t.size(0)
+            r=r.unsqueeze(0).expand(batch_size,-1,-1) # [B,N,1]
 
             """
             1. update memory
@@ -191,8 +194,6 @@ class TRGNN(nn.Module):
             """
             2. embedding
             """
-            batch_size=t.size(0)
-
             # target r vector
             batch_idx=torch.arange(batch_size,device=device) # [B,]
             tar=tar.squeeze(-1) # [B,]
@@ -221,4 +222,3 @@ class TRGNN(nn.Module):
                 r_pred[tar_id]=pred_logit
             r_label=batch['r'][-1] # [N,1]
             r=ModelTrainUtils.teacher_forcing(r_pred=r_pred,r_label=r_label,tar=tar) # [N,1]
-            r=r.unsqueeze(0).expand(batch_size,-1,-1) # [B,N,1]
