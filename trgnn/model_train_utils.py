@@ -45,6 +45,25 @@ class ModelTrainUtils:
         return data_loader
 
     @staticmethod
+    def teacher_forcing(r_pred:torch.Tensor,r_label:torch.Tensor,tar:torch.Tensor,p:float=0.5):
+        """
+        Input
+            r_pred: [N,1]
+            r_label: [N,1]
+            tar: [B,]
+            p: float
+        Output:
+            updated_r_pred
+        """
+        batch_size=tar.size(0)
+        mask=(torch.rand(batch_size,device=r_pred.device)<p) # [B,], boolean tensor
+        for i in range(batch_size):
+            tar_id=tar[i]
+            if mask[i]:
+                r_pred[tar_id]=r_label[tar_id]
+        return r_pred
+
+    @staticmethod
     def chunk_loader_worker(chunk_paths:str,buffer_queue:queue.Queue):
         """
         chunk_paths: chunk 파일 리스트

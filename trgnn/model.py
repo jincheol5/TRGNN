@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from typing_extensions import Literal
 from .modules import TimeEncoder,MemoryUpdater,TimeProjection,GraphAttention,GraphSum
+from .model_train_utils import ModelTrainUtils
 
 class TGAT(nn.Module):
     def __init__(self,node_dim,latent_dim): 
@@ -144,3 +145,79 @@ class TGN(nn.Module):
             logit_list.append(logit)
             memory=updated_memory # set next memory
         return logit_list # List of [B,1], B는 seq 마다 크기 다를 수 있음
+
+class TRGNN(nn.Module):
+    def __init__(self,node_dim,latent_dim): 
+        super().__init__()
+        self.time_encoder=TimeEncoder(time_dim=latent_dim)
+        self.memory_updater=MemoryUpdater(node_dim=node_dim,latent_dim=latent_dim)
+        self.embedding=GraphAttention(node_dim=node_dim,latent_dim=latent_dim)
+        self.linear=nn.Linear(in_features=latent_dim,out_features=1)
+        self.latent_dim=latent_dim
+
+    def forward(self,data_loader,device):
+        """
+        Input:
+            data_loader: List of batch
+                batch
+                    raw: [B,N,1]
+                    r: [B,N,1]
+                    t: [B,N,1]
+                    src: [B,1]
+                    tar: [B,1]
+                    n_mask: [B,N,]
+            device: GPU
+        Output:
+            logit_list: List of [B,1], B는 seq 마다 크기 다를 수 있음
+        """
+        logit_list=[]
+        num_nodes=data_loader[0]['raw'].size(1)
+        memory=torch.zeros(num_nodes,self.latent_dim,dtype=torch.float32,device=device) # [N,latent_dim]
+        r=data_loader[0]['raw'] # [B,N,1]
+        for batch in data_loader:
+            batch={k:v.to(device) for k,v in batch.items()}
+            t=batch['t'] # [B,N,1], float
+            src=batch['src'] # [B,1], long
+            tar=batch['tar'] # [B,1], long
+            n_mask=batch['n_mask'] # [B,N,], neighbor node mask
+
+            """
+            1. update memory
+            """
+            delta_t=self.time_encoder(t) # [B,N,latent_dim]
+            updated_memory=self.memory_updater(x=r,memory=memory,source=src,target=tar,delta_t=delta_t) # [N,latent_dim]
+
+            """
+            2. embedding
+            """
+            batch_size=t.size(0)
+
+            # target r vector
+            batch_idx=torch.arange(batch_size,device=device) # [B,]
+            tar=tar.squeeze(-1) # [B,]
+            tar_r=r[batch_idx,tar,:] # [B,1]
+
+            # target vec
+            tar_hidden_ft=updated_memory[tar] # [B,latent_dim]
+            tar_vec=torch.cat([tar_r,tar_hidden_ft],dim=-1) # [B,node_dim+latent_dim]
+            tar_t=torch.zeros((batch_size,1),dtype=torch.float,device=device) # [B,1]
+            encoded_tar_t=self.time_encoder(tar_t) # [B,latent_dim]
+            tar_h=torch.cat([tar_vec,encoded_tar_t],dim=-1) # [B,node_dim+latent_dim+latent_dim]
+
+            # neighbor
+            hidden_ft=updated_memory.unsqueeze(0).expand(batch_size,-1,-1) # [B,N,latent_dim]
+            x=torch.cat([r,hidden_ft],dim=-1) # [B,N,node_dim+latent_dim]
+            encoded_t=self.time_encoder(t) # [B,N,latent_dim]
+            h=torch.cat([x,encoded_t],dim=-1) # [B,N,node_dim+latent_dim+latent_dim]
+
+            # attention result
+            z=self.embedding(tar_vec=tar_h,tar_idx=tar.unsqueeze(-1),h=h,neighbor_mask=n_mask) # [B,latent_dim]
+
+            # compute logit and set next r
+            logit=self.linear(z) # [B,1]
+            r_pred=r[-1] # [N,1]
+            for tar_id,pred_logit in zip(tar,logit.squeeze(1)):
+                r_pred[tar_id]=pred_logit
+            r_label=batch['r'][-1] # [N,1]
+            r=ModelTrainUtils.teacher_forcing(r_pred=r_pred,r_label=r_label,tar=tar) # [N,1]
+            r=r.unsqueeze(0).expand(batch_size,-1,-1) # [B,N,1]
