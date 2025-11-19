@@ -138,7 +138,7 @@ class TGN(nn.Module):
                     delta_t=t[batch_idx,tar,:] # [B,1]
                     z=self.embedding(target_memory=tar_memory,delta_t=delta_t) # [B,latent_dim]
                 case 'attn'|'sum':
-                    z=self.embedding(tar_vec=tar_h,tar_idx=tar.unsqueeze(-1),h=h,neighbor_mask=n_mask,step='step') # [B,latent_dim]
+                    z=self.embedding(tar_vec=tar_h,tar_idx=tar.unsqueeze(-1),h=h,neighbor_mask=n_mask) # [B,latent_dim]
             
             logit=self.linear(z) # [B,1]
             logit_list.append(logit)
