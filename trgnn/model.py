@@ -222,3 +222,4 @@ class TRGNN(nn.Module):
                 r_pred[tar_id]=pred_logit
             r_label=batch['r'][-1] # [N,1]
             r=ModelTrainUtils.teacher_forcing(r_pred=r_pred,r_label=r_label,tar=tar) # [N,1]
+        return logit_list # List of [B,1], B는 seq 마다 크기 다를 수 있음
