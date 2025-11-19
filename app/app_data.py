@@ -26,21 +26,21 @@ def app_data(config: dict):
                     num_graphs (each type): 5 
                     num_nodes: 20, 50, 100, 500, 1000
             """
-            train_20_nodes=GraphGenerator.generate_7_type_graphs(num_graphs=100,num_nodes=20,num_times=config['num_times'])
-            val_20_nodes=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=20,num_times=config['num_times'])
-            test_20_nodes=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=20,num_times=config['num_times'])
-            test_50_nodes=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=50,num_times=config['num_times'])
-            test_100_nodes=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=100,num_times=config['num_times'])
-            test_500_nodes=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=500,num_times=config['num_times'])
-            test_1000_nodes=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=1000,num_times=config['num_times'])
+            train_20=GraphGenerator.generate_7_type_graphs(num_graphs=100,num_nodes=20,num_times=config['num_times'])
+            val_20=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=20,num_times=config['num_times'])
+            test_20=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=20,num_times=config['num_times'])
+            test_50=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=50,num_times=config['num_times'])
+            test_100=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=100,num_times=config['num_times'])
+            test_500=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=500,num_times=config['num_times'])
+            test_1000=GraphGenerator.generate_7_type_graphs(num_graphs=5,num_nodes=1000,num_times=config['num_times'])
 
-            DataUtils.save_to_pickle(data=train_20_nodes,file_name="train_20",dir_type="graph")
-            DataUtils.save_to_pickle(data=val_20_nodes,file_name="val_20",dir_type="graph")
-            DataUtils.save_to_pickle(data=test_20_nodes,file_name="test_20",dir_type="graph")
-            DataUtils.save_to_pickle(data=test_50_nodes,file_name="test_50",dir_type="graph")
-            DataUtils.save_to_pickle(data=test_100_nodes,file_name="test_100",dir_type="graph")
-            DataUtils.save_to_pickle(data=test_500_nodes,file_name="test_500",dir_type="graph")
-            DataUtils.save_to_pickle(data=test_1000_nodes,file_name="test_1000",dir_type="graph")
+            DataUtils.save_to_pickle(data=train_20,file_name="train_20",dir_type="graph")
+            DataUtils.save_to_pickle(data=val_20,file_name="val_20",dir_type="graph")
+            DataUtils.save_to_pickle(data=test_20,file_name="test_20",dir_type="graph")
+            DataUtils.save_to_pickle(data=test_50,file_name="test_50",dir_type="graph")
+            DataUtils.save_to_pickle(data=test_100,file_name="test_100",dir_type="graph")
+            DataUtils.save_to_pickle(data=test_500,file_name="test_500",dir_type="graph")
+            DataUtils.save_to_pickle(data=test_1000,file_name="test_1000",dir_type="graph")
 
         case 2:
             """
