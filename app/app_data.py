@@ -53,13 +53,14 @@ def app_data(config: dict):
             test_100
             """
             graph_list_dict=DataUtils.load_from_pickle(file_name=f"{config['mode']}_{config['num_nodes']}",dir_type="graph")
-            for graph_type,graph_list in graph_list_dict.items():
-                DataUtils.save_graph_list_to_dataset_list(
-                    graph_list=graph_list,
-                    graph_type=graph_type,
-                    num_nodes=config['num_nodes'],
-                    dir_type=config['mode']
-                )
+            all_graph_list=[]
+            for _,graph_list in graph_list_dict.items():
+                all_graph_list+=graph_list
+            DataUtils.save_graph_list_to_dataset_list(
+                graph_list=all_graph_list,
+                num_nodes=config['num_nodes'],
+                dir_type=config['mode']
+            )
 
         case 3:
             """
