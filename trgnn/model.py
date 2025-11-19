@@ -174,7 +174,7 @@ class TRGNN(nn.Module):
         num_nodes=data_loader[0]['raw'].size(1)
         memory=torch.zeros(num_nodes,self.latent_dim,dtype=torch.float32,device=device) # [N,latent_dim]
         r=data_loader[0]['raw'] # [B,N,1]
-        r.to(device)
+        r=r.to(device)
         for batch in data_loader:
             batch={k:v.to(device) for k,v in batch.items()}
             t=batch['t'] # [B,N,1], float
