@@ -278,6 +278,6 @@ class GraphAnalysis:
         return num_nodes,num_static_edges,num_edge_events
     
     @staticmethod
-    def check_tR_ratio(r:torch.Tensor):
-        r_flat=r.view(-1).to(torch.float32)  # [N,1] -> [N,]
+    def check_tR_ratio(r:torch.Tensor): 
+        r_flat=r.view(-1).to(torch.float32) # [N,1] -> [N,] 
         return r_flat.mean().item()
