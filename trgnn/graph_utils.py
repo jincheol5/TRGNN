@@ -262,3 +262,22 @@ class GraphUtils:
         dataset['label']=torch.tensor(label_list,dtype=torch.float32).unsqueeze(-1) # [E,1]
         dataset['n_mask']=torch.stack(n_mask_list,dim=0) # [E,N]
         return dataset
+
+class GraphAnalysis:
+    @staticmethod
+    def check_elements(graph:nx.DiGraph):
+        num_nodes=graph.number_of_nodes()
+        num_static_edges=graph.number_of_edges()
+        num_edge_events=0
+        for src,tar in graph.edges():
+            count=0
+            for time in graph[src][tar]['t']:
+                if time!=0.0:
+                    count+=1
+            num_edge_events+=count
+        return num_nodes,num_static_edges,num_edge_events
+    
+    @staticmethod
+    def check_tR_ratio(r:torch.Tensor):
+        r_flat=r.view(-1).to(torch.float32)  # [N,1] -> [N,]
+        return r_flat.mean().item()

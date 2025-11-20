@@ -56,11 +56,19 @@ def app_data(config: dict):
             all_graph_list=[]
             for _,graph_list in graph_list_dict.items():
                 all_graph_list+=graph_list
-            DataUtils.save_graph_list_to_dataset_list(
-                graph_list=all_graph_list,
-                num_nodes=config['num_nodes'],
-                dir_type=config['mode']
-            )
+            match config['mode']:
+                case 'train':
+                    DataUtils.save_graph_list_to_dataset_list(
+                        graph_list=all_graph_list,
+                        num_nodes=config['num_nodes'],
+                        dir_type=config['mode']
+                    )
+                case 'val'|'test':
+                    DataUtils.save_graph_list_to_selected_dataset_list(
+                        graph_list=all_graph_list,
+                        num_nodes=config['num_nodes'],
+                        dir_type=config['mode']
+                    )
 
         case 3:
             """
@@ -69,14 +77,23 @@ def app_data(config: dict):
             """
             graph_list_dict=DataUtils.load_from_pickle(file_name=f"{config['mode']}_{config['num_nodes']}",dir_type="graph")
             graph_list=graph_list_dict[config['graph_type']]
-            DataUtils.save_graph_list_to_dataset_list_chunk(
-                graph_list=graph_list,
-                graph_type=config['graph_type'],
-                num_nodes=config['num_nodes'],
-                chunk_size=config['chunk_size'],
-                dir_type=config['mode']
-            )
-
+            match config['mode']:
+                case 'train':
+                    DataUtils.save_graph_list_to_dataset_list_chunk(
+                        graph_list=graph_list,
+                        graph_type=config['graph_type'],
+                        num_nodes=config['num_nodes'],
+                        chunk_size=config['chunk_size'],
+                        dir_type=config['mode']
+                    )
+                case 'val'|'test':
+                    DataUtils.save_graph_list_to_selected_dataset_list_chunk(
+                        graph_list=graph_list,
+                        graph_type=config['graph_type'],
+                        num_nodes=config['num_nodes'],
+                        chunk_size=config['chunk_size'],
+                        dir_type=config['mode']
+                    )
 
 if __name__=="__main__":
     """
