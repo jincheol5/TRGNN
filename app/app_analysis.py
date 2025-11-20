@@ -12,7 +12,7 @@ def app_analysis(config:dict):
             check_elements
             """
             print(f"<<Check {config['mode']}_{config['num_nodes']} graphs elements>>")
-            graph_list_dict=DataUtils.load_from_pickle(file_name=f"{config['mode']}_{config['num_nodes']}",dir_type="graph")
+            graph_list_dict=DataUtils.load_from_pickle(file_name=f"{config['mode']}_{config['num_nodes']}",dir_type="graph",num_nodes=config['num_nodes'])
             for graph_type,graph_list in graph_list_dict.items():
                 N_list=[]
                 E_s_list=[]
@@ -51,8 +51,7 @@ def app_analysis(config:dict):
                 n_mask: [seq_len,N]
                 label: [seq_len,1]
             """
-
-            dataset_list=DataUtils.load_from_pickle(file_name=f"{config['mode']}_{config['num_nodes']}",dir_type=config['mode'])
+            dataset_list=DataUtils.load_from_pickle(file_name=f"{config['mode']}_{config['num_nodes']}",dir_type=config['mode'],num_nodes=config['num_nodes'])
             all_ratios=[]
             for dataset in dataset_list:
                 label=dataset['label'] # [seq_len,1]
