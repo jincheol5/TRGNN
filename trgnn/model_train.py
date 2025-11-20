@@ -136,4 +136,9 @@ class ModelTrainer:
                     acc=Metrics.compute_tR_acc(logit_list=output,label_list=label_list)
                     acc_list.append(acc)
                 pbar.update(1) # chunk 처리 완료 → tqdm 1 증가
+
+                # 메모리 정리
+                del dataset_list
+                del data_loader_list
+                del data_loader
         return float(np.mean(acc_list))
