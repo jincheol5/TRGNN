@@ -5,7 +5,7 @@ import argparse
 import wandb
 import torch
 from tqdm import tqdm
-from trgnn import DataUtils,ModelTrainer,ModelTrainUtils,TGAT,TGN,TRGNN
+from trgnn import DataUtils,ModelTrainer,ModelTrainUtils,TGAT,TGN,TRGNN,TRGAT
 
 def app_train(config: dict):
     """
@@ -32,7 +32,7 @@ def app_train(config: dict):
             if config['wandb']:
                 if config['model']=='tgn':
                     wandb.init(project="TRGNN",name=f"{config['model']}_{config['emb']}_{config['seed']}_{config['lr']}_{config['batch_size']}")
-                else: # tgat, trgnn
+                else: # tgat, trgnn, trgat
                     wandb.init(project="TRGNN",name=f"{config['model']}_{config['seed']}_{config['lr']}_{config['batch_size']}")
                 wandb.config.update(config)
 
@@ -67,6 +67,8 @@ def app_train(config: dict):
                     model=TGN(node_dim=1,latent_dim=config['latent_dim'],emb=config['emb'])
                 case 'trgnn':
                     model=TRGNN(node_dim=1,latent_dim=config['latent_dim'])
+                case 'trgat':
+                    model=TRGAT(node_dim=1,latent_dim=config['latent_dim'])
             ModelTrainer.train(model=model,train_data_loader_list=train_data_loader_list,val_data_loader_list=val_data_loader_list,validate=True,config=config)
 
             """
@@ -80,6 +82,8 @@ def app_train(config: dict):
                         model_name=f"tgn_{config['emb']}_{config['seed']}_{config['lr']}_{config['batch_size']}"
                     case 'trgnn':
                         model_name=f"trgnn_{config['seed']}_{config['lr']}_{config['batch_size']}"
+                    case 'trgat':
+                        model_name=f"trgat_{config['seed']}_{config['lr']}_{config['batch_size']}"
                 DataUtils.save_model_parameter(model=model,model_name=model_name)
 
         case 2:
@@ -112,7 +116,40 @@ def app_train(config: dict):
                     model_name=f"trgnn_{config['seed']}_{config['lr']}_{config['batch_size']}"
                     model=TRGNN(node_dim=1,latent_dim=config['latent_dim'])
                     model=DataUtils.load_model_parameter(model=model,model_name=model_name)
+                case 'trgat':
+                    model_name=f"trgat_{config['seed']}_{config['lr']}_{config['batch_size']}"
+                    model=TRGAT(node_dim=1,latent_dim=config['latent_dim'])
+                    model=DataUtils.load_model_parameter(model=model,model_name=model_name)
             acc=ModelTrainer.test(model=model,data_loader_list=test_data_loader_list)
+            print(f"test_{config['num_nodes']} tR acc: {acc}")
+
+        case 3:
+            """
+            App 3.
+            test model
+            chunk files
+            """
+            """
+            model setting and evaluating
+            """
+            match config['model']:
+                case 'tgat':
+                    model_name=f"tgat_{config['seed']}_{config['lr']}_{config['batch_size']}"
+                    model=TGAT(node_dim=1,latent_dim=config['latent_dim'])
+                    model=DataUtils.load_model_parameter(model=model,model_name=model_name)
+                case 'tgn':
+                    model_name=f"tgn_{config['emb']}_{config['seed']}_{config['lr']}_{config['batch_size']}"
+                    model=TGN(node_dim=1,latent_dim=config['latent_dim'],emb=config['emb'])
+                    model=DataUtils.load_model_parameter(model=model,model_name=model_name)
+                case 'trgnn':
+                    model_name=f"trgnn_{config['seed']}_{config['lr']}_{config['batch_size']}"
+                    model=TRGNN(node_dim=1,latent_dim=config['latent_dim'])
+                    model=DataUtils.load_model_parameter(model=model,model_name=model_name)
+                case 'trgat':
+                    model_name=f"trgat_{config['seed']}_{config['lr']}_{config['batch_size']}"
+                    model=TRGAT(node_dim=1,latent_dim=config['latent_dim'])
+                    model=DataUtils.load_model_parameter(model=model,model_name=model_name)
+            acc=ModelTrainer.test_chunk(model=model,config=config)
             print(f"test_{config['num_nodes']} tR acc: {acc}")
 
 if __name__=="__main__":
@@ -124,7 +161,7 @@ if __name__=="__main__":
     parser.add_argument("--app_num",type=int,default=1)
     
     # setting
-    parser.add_argument("--model",type=str,default='tgat') # tgat,tgn,trgnn
+    parser.add_argument("--model",type=str,default='tgat') # tgat,tgn,trgnn,trgat
     parser.add_argument("--emb",type=str,default='attn') # time, attn, sum
 
     # train

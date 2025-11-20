@@ -92,3 +92,48 @@ class ModelTrainer:
                 acc=Metrics.compute_tR_acc(logit_list=output,label_list=label_list)
                 acc_list.append(acc)
         return float(np.mean(acc_list))
+
+    @staticmethod
+    def test_chunk(model,config:dict):
+        device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model.to(device)
+        model.eval()
+
+        chunk_dir_path=os.path.join('..','data','trgnn','test',f"{config['num_nodes']}")
+        chunk_files=sorted(
+            [f for f in os.listdir(chunk_dir_path) if f.startswith(f"test_{config['num_nodes']}_chunk_{config['chunk_size']}_")],
+            key=lambda x: int(x.split("_")[-1].split(".")[0])  # 마지막 index 숫자로 정렬
+        )
+        chunk_paths=[os.path.join(chunk_dir_path,f) for f in chunk_files]
+        num_chunks=len(chunk_paths) # for tqdm
+
+        buffer_queue=queue.Queue(maxsize=2)
+        loader_thread=threading.Thread(
+            target=ModelTrainUtils.chunk_loader_worker,
+            args=(chunk_paths,buffer_queue)
+        )
+        loader_thread.start()
+
+        acc_list=[]
+        with torch.no_grad():
+            pbar=tqdm(total=num_chunks,desc="Evaluating chunks...") # tqdm: 전체 chunk 수 기준
+            while True:
+                dataset_list=buffer_queue.get()
+                if dataset_list is None:
+                    break
+
+                data_loader_list=[]
+                for dataset in dataset_list:
+                    data_loader=ModelTrainUtils.get_data_loader(dataset=dataset,batch_size=config['batch_size'])
+                    data_loader_list.append(data_loader)
+                
+                for data_loader in data_loader_list:
+                    label_list=[batch['label'] for batch in data_loader] # List of [B,1], B는 각 element마다 다를 수 있음
+                    label_list=[label.to(device) for label in label_list]
+
+                    output=model(data_loader=data_loader,device=device) # List of [B,1], B는 각 element마다 다를 수 있음
+
+                    acc=Metrics.compute_tR_acc(logit_list=output,label_list=label_list)
+                    acc_list.append(acc)
+                pbar.update(1) # chunk 처리 완료 → tqdm 1 증가
+        return float(np.mean(acc_list))
