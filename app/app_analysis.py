@@ -4,6 +4,7 @@ import queue
 import networkx as nx
 import numpy as np
 import argparse
+from tqdm import tqdm
 from trgnn import DataUtils,GraphAnalysis,ModelTrainUtils
 
 def app_analysis(config:dict):
@@ -75,6 +76,7 @@ def app_analysis(config:dict):
                 key=lambda x: int(x.split("_")[-1].split(".")[0])  # 마지막 index 숫자로 정렬
             )
             chunk_paths=[os.path.join(chunk_dir_path,f) for f in chunk_files]
+            num_chunks=len(chunk_paths) # for tqdm
 
             buffer_queue=queue.Queue(maxsize=2)
             loader_thread=threading.Thread(
@@ -84,6 +86,7 @@ def app_analysis(config:dict):
             loader_thread.start()
 
             label_list=[]
+            pbar=tqdm(total=num_chunks,desc="Evaluating chunks...") # tqdm: 전체 chunk 수 기준
             while True:
                 dataset_list=buffer_queue.get()
                 if dataset_list is None:
@@ -91,6 +94,7 @@ def app_analysis(config:dict):
                 for dataset in dataset_list:
                     label=dataset['label'] # [seq_len,1]
                     label_list.append(label)
+                pbar.update(1) # chunk 처리 완료 → tqdm 1 증가
                 del dataset_list # 메모리 정리
             
             graph_type_list=['ladder','grid','tree','erdos_renyi','barabasi_albert','community','caveman']
