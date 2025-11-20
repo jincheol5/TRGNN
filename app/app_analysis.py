@@ -119,6 +119,7 @@ if __name__=="__main__":
     parser.add_argument("--graph_type",type=str,default="ladder")
     parser.add_argument("--mode",type=str,default="train")
     parser.add_argument("--num_nodes",type=int,default=20)
+    parser.add_argument("--chunk_size",type=int,default=10)
     args=parser.parse_args()
 
     config={
@@ -126,6 +127,7 @@ if __name__=="__main__":
         'app_num':args.app_num,
         "graph_type":args.graph_type,
         "mode":args.mode,
-        "num_nodes":args.num_nodes
+        "num_nodes":args.num_nodes,
+        "chunk_size":args.chunk_size
     }
     app_analysis(config=config)
