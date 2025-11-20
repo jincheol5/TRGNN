@@ -120,8 +120,8 @@ def app_train(config: dict):
                     model_name=f"trgat_{config['seed']}_{config['lr']}_{config['batch_size']}"
                     model=TRGAT(node_dim=1,latent_dim=config['latent_dim'])
                     model=DataUtils.load_model_parameter(model=model,model_name=model_name)
-            acc=ModelTrainer.test(model=model,data_loader_list=test_data_loader_list)
-            print(f"test_{config['num_nodes']} tR acc: {acc}")
+            acc,mcc=ModelTrainer.test(model=model,data_loader_list=test_data_loader_list)
+            print(f"test_{config['num_nodes']} tR Acc: {acc} MCC: {mcc}")
 
         case 3:
             """
@@ -149,8 +149,8 @@ def app_train(config: dict):
                     model_name=f"trgat_{config['seed']}_{config['lr']}_{config['batch_size']}"
                     model=TRGAT(node_dim=1,latent_dim=config['latent_dim'])
                     model=DataUtils.load_model_parameter(model=model,model_name=model_name)
-            acc=ModelTrainer.test_chunk(model=model,config=config)
-            print(f"test_{config['num_nodes']} tR acc: {acc}")
+            acc,mcc=ModelTrainer.test_chunk(model=model,config=config)
+            print(f"test_{config['num_nodes']} tR Acc: {acc} MCC: {mcc}")
 
 if __name__=="__main__":
     """

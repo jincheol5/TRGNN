@@ -69,8 +69,8 @@ class ModelTrainer:
             validate
             """
             if validate:
-                acc=ModelTrainer.test(model=model,data_loader_list=val_data_loader_list)
-                print(f"{epoch+1} epoch tR validation acc: {acc}")
+                acc,mcc=ModelTrainer.test(model=model,data_loader_list=val_data_loader_list)
+                print(f"{epoch+1} epoch tR validation Acc: {acc} MCC: {mcc}")
 
     @staticmethod
     def test(model,data_loader_list):
@@ -82,6 +82,7 @@ class ModelTrainer:
         model test
         """
         acc_list=[]
+        mcc_list=[]
         with torch.no_grad():
             for data_loader in tqdm(data_loader_list,desc=f"Evaluating..."):
                 label_list=[batch['label'] for batch in data_loader] # List of [B,1], B는 각 element마다 다를 수 있음
@@ -91,7 +92,10 @@ class ModelTrainer:
 
                 acc=Metrics.compute_tR_acc(logit_list=output,label_list=label_list)
                 acc_list.append(acc)
-        return float(np.mean(acc_list))
+
+                mcc=Metrics.compute_tR_MCC(logit_list=output,label_list=label_list)
+                mcc_list.append(mcc)
+        return float(np.mean(acc_list)),float(np.mean(mcc_list))
 
     @staticmethod
     def test_chunk(model,config:dict):
@@ -115,6 +119,7 @@ class ModelTrainer:
         loader_thread.start()
 
         acc_list=[]
+        mcc_list=[]
         with torch.no_grad():
             pbar=tqdm(total=num_chunks,desc="Evaluating chunks...") # tqdm: 전체 chunk 수 기준
             while True:
@@ -135,10 +140,13 @@ class ModelTrainer:
 
                     acc=Metrics.compute_tR_acc(logit_list=output,label_list=label_list)
                     acc_list.append(acc)
+
+                    mcc=Metrics.compute_tR_MCC(logit_list=output,label_list=label_list)
+                    mcc_list.append(mcc)
                 pbar.update(1) # chunk 처리 완료 → tqdm 1 증가
 
                 # 메모리 정리
                 del dataset_list
                 del data_loader_list
                 del data_loader
-        return float(np.mean(acc_list))
+        return float(np.mean(acc_list)),float(np.mean(mcc_list))
