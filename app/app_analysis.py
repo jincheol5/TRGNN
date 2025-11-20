@@ -1,8 +1,10 @@
+import os
+import threading
+import queue
 import networkx as nx
 import numpy as np
 import argparse
-import torch
-from trgnn import DataUtils,GraphAnalysis
+from trgnn import DataUtils,GraphAnalysis,ModelTrainUtils
 
 def app_analysis(config:dict):
     match config['app_num']:
@@ -51,6 +53,53 @@ def app_analysis(config:dict):
                 all_ratios=[]
                 for dataset in dataset_list:
                     label=dataset['label'] # [seq_len,1]
+                    tR_ratio=GraphAnalysis.check_tR_ratio(r=label)
+                    all_ratios.append(tR_ratio)
+                lst=np.array(all_ratios,dtype=float)
+                mean_ratio=lst.mean()
+                max_ratio=lst.max()
+                min_ratio=lst.min()
+                print(f"{config['mode']}_{config['num_nodes']} {graph_type} graphs tR_ratio:{mean_ratio} max:{max_ratio} min:{min_ratio}")
+                print()
+
+        case 3:
+            """
+            check_tR_ratio
+                test_1000
+            """
+            print(f"<<Check {config['mode']}_{config['num_nodes']} graphs tR ratio>>")
+
+            chunk_dir_path=os.path.join('..','data','trgnn','test',f"{config['num_nodes']}")
+            chunk_files=sorted(
+                [f for f in os.listdir(chunk_dir_path) if f.startswith(f"test_{config['num_nodes']}_chunk_{config['chunk_size']}_")],
+                key=lambda x: int(x.split("_")[-1].split(".")[0])  # 마지막 index 숫자로 정렬
+            )
+            chunk_paths=[os.path.join(chunk_dir_path,f) for f in chunk_files]
+
+            buffer_queue=queue.Queue(maxsize=2)
+            loader_thread=threading.Thread(
+                target=ModelTrainUtils.chunk_loader_worker,
+                args=(chunk_paths,buffer_queue)
+            )
+            loader_thread.start()
+
+            label_list=[]
+            while True:
+                dataset_list=buffer_queue.get()
+                if dataset_list is None:
+                    break
+                for dataset in dataset_list:
+                    label=dataset['label'] # [seq_len,1]
+                    label_list.append(label)
+                del dataset_list # 메모리 정리
+            
+            graph_type_list=['ladder','grid','tree','erdos_renyi','barabasi_albert','community','caveman']
+
+            check_size=50
+            label_lists=[label_list[i:i+check_size] for i in range(0,len(label_list),check_size)]
+            for graph_type,sub_label_list in zip(graph_type_list,label_lists):
+                all_ratios=[]
+                for label in sub_label_list:
                     tR_ratio=GraphAnalysis.check_tR_ratio(r=label)
                     all_ratios.append(tR_ratio)
                 lst=np.array(all_ratios,dtype=float)
