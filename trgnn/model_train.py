@@ -82,7 +82,8 @@ class ModelTrainer:
         model test
         """
         acc_list=[]
-        mcc_list=[]
+        all_logit_list=[]
+        all_label_list=[]
         with torch.no_grad():
             for data_loader in tqdm(data_loader_list,desc=f"Evaluating..."):
                 label_list=[batch['label'] for batch in data_loader] # List of [B,1], B는 각 element마다 다를 수 있음
@@ -93,9 +94,11 @@ class ModelTrainer:
                 acc=Metrics.compute_tR_acc(logit_list=output,label_list=label_list)
                 acc_list.append(acc)
 
-                mcc=Metrics.compute_tR_MCC(logit_list=output,label_list=label_list)
-                mcc_list.append(mcc)
-        return float(np.mean(acc_list)),float(np.mean(mcc_list))
+                all_logit_list+=output
+                all_label_list+=label_list
+        # compute MCC
+        mcc=Metrics.compute_tR_MCC(logit_list=all_logit_list,label_list=all_label_list)
+        return float(np.mean(acc_list)),mcc
 
     @staticmethod
     def test_chunk(model,config:dict):
@@ -119,7 +122,8 @@ class ModelTrainer:
         loader_thread.start()
 
         acc_list=[]
-        mcc_list=[]
+        all_logit_list=[]
+        all_label_list=[]
         with torch.no_grad():
             pbar=tqdm(total=num_chunks,desc="Evaluating chunks...") # tqdm: 전체 chunk 수 기준
             while True:
@@ -141,12 +145,15 @@ class ModelTrainer:
                     acc=Metrics.compute_tR_acc(logit_list=output,label_list=label_list)
                     acc_list.append(acc)
 
-                    mcc=Metrics.compute_tR_MCC(logit_list=output,label_list=label_list)
-                    mcc_list.append(mcc)
+                    all_logit_list+=output
+                    all_label_list+=label_list
                 pbar.update(1) # chunk 처리 완료 → tqdm 1 증가
 
                 # 메모리 정리
                 del dataset_list
                 del data_loader_list
                 del data_loader
-        return float(np.mean(acc_list)),float(np.mean(mcc_list))
+
+        # compute MCC
+        mcc=Metrics.compute_tR_MCC(logit_list=all_logit_list,label_list=all_label_list)
+        return float(np.mean(acc_list)),mcc
