@@ -1,13 +1,13 @@
 project: TRGNN
 method: grid
-name: trgnn_train
+name: trgat_train
 command:
   - ${env}
   - ${interpreter}
   - -m
   - app.app_train
   - --app_num=1
-  - --model=trgnn
+  - --model=trgat
   - --optimizer=adam
   - --epochs=100
   - --early_stop=1
