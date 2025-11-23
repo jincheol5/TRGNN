@@ -20,19 +20,19 @@ def app_evaluate(config:dict):
             wandb.init(project="tRGNN",name=f"test_{config['num_nodes']}_result")
 
             """
-            load dataset_list
+            load dataset_list and evaluate
             """
-            dataset_list=DataUtils.load_from_pickle(file_name=f"test_{config['num_nodes']}",dir_type="test",num_nodes=config['num_nodes'])
-            test_data_loader_list=[]
-            for dataset in dataset_list:
-                data_loader=ModelTrainUtils.get_data_loader(dataset=dataset,batch_size=config['batch_size'])
-                test_data_loader_list.append(data_loader)
-            
             model_list=['tgat','tgn','trgnn','trgat']
             seed_list=[1,2,3]
             lr_list=[0.001,0.0005]
             batch_size=16
             latent_dim=32
+
+            dataset_list=DataUtils.load_from_pickle(file_name=f"test_{config['num_nodes']}",dir_type="test",num_nodes=config['num_nodes'])
+            test_data_loader_list=[]
+            for dataset in dataset_list:
+                data_loader=ModelTrainUtils.get_data_loader(dataset=dataset,batch_size=batch_size)
+                test_data_loader_list.append(data_loader)
 
             for seed in seed_list:
                 """
