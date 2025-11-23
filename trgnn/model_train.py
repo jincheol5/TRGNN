@@ -69,8 +69,8 @@ class ModelTrainer:
             validate
             """
             if validate:
-                acc,mcc=ModelTrainer.test(model=model,data_loader_list=val_data_loader_list)
-                print(f"{epoch+1} epoch tR validation Acc: {acc} MCC: {mcc}")
+                acc,macrof1,auroc,prauc,mcc=ModelTrainer.test(model=model,data_loader_list=val_data_loader_list)
+                print(f"{epoch+1} epoch tR validation Acc: {acc} macro-f1: {macrof1} AUROC: {auroc} PR-AUC: {prauc} MCC: {mcc}")
 
     @staticmethod
     def test(model,data_loader_list):
@@ -96,9 +96,14 @@ class ModelTrainer:
 
                 all_logit_list+=output
                 all_label_list+=label_list
-        # compute MCC
+
+        # compute macrof1,auroc,prauc,mcc
+        acc=float(np.mean(acc_list))
+        macrof1=Metrics.compute_tR_macroF1(logit_list=all_logit_list,label_list=all_label_list)
+        auroc=Metrics.compute_tR_AUROC(logit_list=all_logit_list,label_list=all_label_list)
+        prauc=Metrics.compute_tR_PRAUC(logit_list=all_logit_list,label_list=all_label_list)
         mcc=Metrics.compute_tR_MCC(logit_list=all_logit_list,label_list=all_label_list)
-        return float(np.mean(acc_list)),mcc
+        return acc,macrof1,auroc,prauc,mcc
 
     @staticmethod
     def test_chunk(model,config:dict):
@@ -154,6 +159,10 @@ class ModelTrainer:
                 del data_loader_list
                 del data_loader
 
-        # compute MCC
+        # compute macrof1,auroc,prauc,mcc
+        acc=float(np.mean(acc_list))
+        macrof1=Metrics.compute_tR_macroF1(logit_list=all_logit_list,label_list=all_label_list)
+        auroc=Metrics.compute_tR_AUROC(logit_list=all_logit_list,label_list=all_label_list)
+        prauc=Metrics.compute_tR_PRAUC(logit_list=all_logit_list,label_list=all_label_list)
         mcc=Metrics.compute_tR_MCC(logit_list=all_logit_list,label_list=all_label_list)
-        return float(np.mean(acc_list)),mcc
+        return acc,macrof1,auroc,prauc,mcc

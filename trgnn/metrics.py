@@ -1,5 +1,7 @@
+import math
 import torch
 import torch.nn.functional as F
+from torcheval.metrics.functional import binary_auroc,binary_auprc,binary_f1_score
 
 class Metrics:
     @staticmethod
@@ -38,7 +40,59 @@ class Metrics:
             acc_list.append(step_acc)
         acc=torch.stack(acc_list).mean() 
         return acc.cpu().item()
-    
+
+    @staticmethod
+    def compute_tR_macroF1(logit_list:list,label_list:list,threshold:float=0.0):
+        # 1) 리스트를 하나로 쭉 이어 붙이기 (B가 서로 달라도 문제 없음)
+        logit_all=torch.cat(logit_list,dim=0).view(-1) # [all_B,]
+        label_all=torch.cat(label_list,dim=0).view(-1) # [all_B,]
+
+        # 2) 예측 레이블(positive=1, negative=0)
+        pred_label=(logit_all>=threshold).float()
+
+        # --- Positive class F1 ---
+        f1_pos=binary_f1_score(logit_all,label_all,threshold=threshold)
+
+        # --- Negative class F1 ---
+        inv_pred=1-pred_label # negative=1로 취급
+        inv_label=1-label_all # negative=1로 취급
+
+        # negative class에 대한 F1 (positive 역할을 바꿔서 계산)
+        f1_neg=binary_f1_score(inv_pred,inv_label,threshold=0.5)
+
+        # 3) macro-F1 = (F1_pos + F1_neg) / 2
+        f1_pos=f1_pos.item()
+        f1_neg=f1_neg.item()
+
+        # nan 방지 처리
+        if math.isnan(f1_pos):
+            f1_pos=0.0
+        if math.isnan(f1_neg):
+            f1_neg=0.0
+
+        macro_f1=(f1_pos+f1_neg)/2.0
+        return macro_f1
+
+    @staticmethod
+    def compute_tR_AUROC(logit_list:list,label_list:list):
+        # 1) 리스트를 하나로 쭉 이어 붙이기 (B가 서로 달라도 문제 없음)
+        logit_all=torch.cat(logit_list,dim=0).view(-1) # [all_B,]
+        label_all=torch.cat(label_list,dim=0).view(-1) # [all_B,]
+        auroc=binary_auroc(logit_all, label_all).item()
+        if math.isnan(auroc):
+            auroc=0.5 # label이 모두 1이거나 0이면 0.5 반환
+        return auroc 
+
+    @staticmethod
+    def compute_tR_PRAUC(logit_list:list,label_list:list):
+        # 1) 리스트를 하나로 쭉 이어 붙이기 (B가 서로 달라도 문제 없음)
+        logit_all=torch.cat(logit_list,dim=0).view(-1) # [all_B,]
+        label_all=torch.cat(label_list,dim=0).view(-1) # [all_B,]
+        prauc=binary_auprc(logit_all, label_all).item()
+        if math.isnan(prauc):
+            prauc=0.0 # label이 모두 1이거나 0이면 0.0 반환
+        return prauc
+
     @staticmethod
     def compute_tR_MCC(logit_list:list,label_list:list,eps=1e-8):
         """
