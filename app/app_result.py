@@ -4,11 +4,11 @@ import pandas as pd
 
 def app_result(config:dict):
     api=wandb.Api()
-    run_20=api.run(f"jcoh-research/tR-NE/779iword")
-    run_50=api.run(f"jcoh-research/tR-NE/")
-    run_100=api.run(f"jcoh-research/tR-NE/")
-    run_500=api.run(f"jcoh-research/tR-NE/")
-    run_1000=api.run(f"jcoh-research/tR-NE/")
+    run_20=api.run(f"jcoh-research/TRGNN/779iword")
+    run_50=api.run(f"jcoh-research/TRGNN/")
+    run_100=api.run(f"jcoh-research/TRGNN/")
+    run_500=api.run(f"jcoh-research/TRGNN/")
+    run_1000=api.run(f"jcoh-research/TRGNN/")
 
     match config['app_num']:
         case 1:
