@@ -4,7 +4,6 @@ import numpy as np
 import argparse
 import wandb
 import torch
-from torch.utils.data import DataLoader
 from trgnn import DataUtils,ModelTrainer,ModelTrainUtils,TGAT,TGN,TRGNN,TRGAT
 
 def app_evaluate(config:dict):
@@ -36,6 +35,18 @@ def app_evaluate(config:dict):
             latent_dim=32
 
             for seed in seed_list:
+                """
+                seed setting
+                """
+                random.seed(seed)
+                np.random.seed(seed)
+                torch.manual_seed(seed) 
+                os.environ["PYTHONHASHSEED"]=str(seed)
+                torch.cuda.manual_seed(seed)
+                torch.cuda.manual_seed_all(seed)
+                torch.backends.cudnn.deterministic=True 
+                torch.backends.cudnn.benchmark=False
+
                 for lr in lr_list:
                     for model in model_list:
                         if model=='tgn':
@@ -43,18 +54,6 @@ def app_evaluate(config:dict):
                         else:
                             emb_list=[None]
                         for emb in emb_list:
-                            """
-                            seed setting
-                            """
-                            random.seed(seed)
-                            np.random.seed(seed)
-                            torch.manual_seed(seed) 
-                            os.environ["PYTHONHASHSEED"]=str(seed)
-                            torch.cuda.manual_seed(seed)
-                            torch.cuda.manual_seed_all(seed)
-                            torch.backends.cudnn.deterministic=True 
-                            torch.backends.cudnn.benchmark=False
-
                             """
                             model setting and evaluating
                             """
@@ -75,4 +74,32 @@ def app_evaluate(config:dict):
                                     model_name=f"trgat_{seed}_{lr}_{batch_size}"
                                     model=TRGAT(node_dim=1,latent_dim=latent_dim)
                                     model=DataUtils.load_model_parameter(model=model,model_name=model_name)
-                            ModelTrainer.test(model=model,data_loader_list=test_data_loader_list)
+                            acc,macrof1,auroc,prauc,mcc=ModelTrainer.test(model=model,data_loader_list=test_data_loader_list)
+
+                            wandb.log({
+                                f"acc":acc,
+                                f"macrof1":macrof1,
+                                f"auroc":auroc,
+                                f"prauc":prauc,
+                                f"mcc":mcc,
+                                f"model":model,
+                                f"emb": emb if emb else "default",
+                                f"seed":seed,
+                                f"lr":lr,
+                                f"batch_size":batch_size
+                            })
+
+if __name__=="__main__":
+    """
+    Execute app_evaluate
+    """
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--app_num",type=int,default=1)
+    parser.add_argument("--num_nodes",type=int,default=20)
+    args=parser.parse_args()
+
+    config={
+        'app_num':args.app_num,
+        'test_num_nodes':args.num_nodes
+    }
+    app_evaluate(config=config)
