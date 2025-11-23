@@ -100,6 +100,6 @@ if __name__=="__main__":
 
     config={
         'app_num':args.app_num,
-        'test_num_nodes':args.num_nodes
+        'num_nodes':args.num_nodes
     }
     app_evaluate(config=config)
